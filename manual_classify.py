@@ -47,7 +47,7 @@ def prepare_files(classes):
 
 
 def crop_image(file_name: str) -> list[str]:
-    print(f"Cropping {os.path.basename(file_name).replace('.png', '')}")
+    print(f"Cropping {os.path.basename(file_name)}")
     """make cropped images
 
     Args:
