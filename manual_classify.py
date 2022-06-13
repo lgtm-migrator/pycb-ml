@@ -30,6 +30,10 @@ def prepare_files(classes):
     # retrieve file names from preprocess dir
     file_names = [os.path.join(pre_process_data_dir, file_name) for file_name in next(
         os.walk(pre_process_data_dir), (None, None, []))[2]]
+    try:
+        file_names.sort(key=lambda x: int(os.path.basename(x).replace(".png", "")))
+    except ValueError:
+        file_names.sort(key=lambda x: os.path.basename(x).replace(".png", ""))
     # define training data dir, make if not there
     train_data_dir = os.path.join(module_path, 'data', 'train')
     if not os.path.exists(train_data_dir):
@@ -43,7 +47,7 @@ def prepare_files(classes):
 
 
 def crop_image(file_name: str) -> list[str]:
-    print(f"Cropping {file_name[70:]}")
+    print(f"Cropping {os.path.basename(file_name).replace('.png', '')}")
     """make cropped images
 
     Args:
@@ -55,7 +59,7 @@ def crop_image(file_name: str) -> list[str]:
     # locations of corners on grid
     corners = {
         #name:(left, top, right, bottom)
-        "A1": (65, 190, 175, 255),    "A2": (175, 190, 245, 255),    "A3": (245, 190, 355, 255),
+        "A1": (65, 190, 175, 275),    "A2": (175, 190, 245, 275),    "A3": (245, 190, 355, 275),
         "B1": (65, 275, 175, 400),    "B2": (175, 275, 245, 400),    "B3": (245, 275, 355, 400),
         "C1": (65, 400, 175, 515),    "C2": (175, 400, 245, 515),    "C3": (245, 400, 355, 515),
     }
@@ -73,7 +77,7 @@ def crop_image(file_name: str) -> list[str]:
 
 
 def crop_images(file_names: list[str]) -> dict[str, list[str]]:
-    print(f"Cropping images")
+    print("Cropping images")
     """crop a list of images
 
     Args:
@@ -91,10 +95,11 @@ def crop_images(file_names: list[str]) -> dict[str, list[str]]:
     image_crops = pool.map(crop_image, file_names)
 
     image_crop_dict = dict(zip(file_names, image_crops))
+    print("Done cropping images.")
     return image_crop_dict
 
 
-def prompt_for_class(classes:list[str],file_name: str, image_crops: list[str]) -> str:
+def prompt_for_class(classes: list[str], file_name: str, image_crops: list[str]) -> str:
     """prompt user to classify image
 
     Args:
@@ -165,7 +170,7 @@ def save_classified_image(classes: list[str], train_data_dir: str, file_name: st
 
 def main() -> None:
     # classes for which to make folders
-    classes = ["A1", "A3", "B1", "B3", "C1", "C2", "C3", "None"]
+    classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
 
     # locate the training data dir and the file names
     train_data_dir, file_names = prepare_files(classes)
@@ -177,7 +182,7 @@ def main() -> None:
     for file_name in image_crop_dict:
         image_crops = image_crop_dict[file_name]
         classification = prompt_for_class(classes,
-            os.path.basename(file_name), image_crops)
+                                          os.path.basename(file_name), image_crops)
         save_classified_image(classes, train_data_dir,
                               file_name, classification)
 
