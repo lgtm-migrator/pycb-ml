@@ -7,9 +7,8 @@ import numpy as np
 
 from keras.models import load_model
 
-model_name = "12345"
-validation_image_name = "car/1.png"
-img_width, img_height = 224, 224
+model_name = "1655102616"
+validation_image_name = "test/1.png"
 
 module_path = os.path.dirname(os.path.realpath(__file__))
 model_path = os.path.join(
@@ -22,10 +21,12 @@ model_path = os.path.join(
 model = load_model(model_path)
 
 
-validation_data_dir = os.path.join(module_path, 'data', 'validate')
-validation_image = os.path.join(validation_data_dir, validation_image_name)
+test_data_dir = os.path.join(module_path, 'data', 'test')
+test_image = os.path.join(test_data_dir, validation_image_name)
 
-image = load_img(validation_image, target_size=(img_width, img_height))
+img_width, img_height = (355, 515)
+
+image = load_img(test_image, target_size=(img_width, img_height))
 img = np.array(image)
 img = img / 255.0
 img = img.reshape(1, img_width, img_height, 3)
