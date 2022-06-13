@@ -51,7 +51,7 @@ def crop_image(file_name: str) -> list[str]:
     """make cropped images
 
     Args:
-        file_name (str): location of folder
+        file_name (str): location of image
 
     Returns:
         list[str]: list of cropped images
