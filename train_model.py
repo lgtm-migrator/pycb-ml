@@ -9,7 +9,7 @@ from keras import backend as K
 import tempfile
 import shutil
 
-from data_statistics import get_class_stats
+from data_statistics import get_class_stats, print_statistics
 
 
 def copy_list_of_files(file_list, desitation_dir):
@@ -20,15 +20,18 @@ def copy_list_of_files(file_list, desitation_dir):
 def copy_files_to_temp(classes, train_data_dir):
     temp_train_dir = tempfile.mkdtemp()
     temp_validate_dir = tempfile.mkdtemp()
-    # normalize training data count
-    print("Input data stats:")
+
     class_stats = get_class_stats(classes, train_data_dir)
+    print("Input data stats:")
+    print_statistics(class_stats)
+
+    # get value to normalize training data count
     smallest_class_size = min(class_stats.values())
 
     for class_name in classes:
         class_data_dir = os.path.join(train_data_dir, class_name)
 
-        # make dirs for class in temp dir
+        # make dir for class in temp dirs
         os.makedirs(os.path.join(temp_train_dir, class_name))
         os.makedirs(os.path.join(temp_validate_dir, class_name))
 
@@ -54,9 +57,10 @@ def copy_files_to_temp(classes, train_data_dir):
             temp_train_dir, class_name))
 
     print("Normalized training data stats:")
-    class_stats = get_class_stats(classes, temp_train_dir)
+    print("Input data stats:")
+    print_statistics(get_class_stats(classes, temp_train_dir))
     print("Normalized validation data stats:")
-    class_stats = get_class_stats(classes, temp_validate_dir)
+    print_statistics(get_class_stats(classes, temp_validate_dir))
 
     return temp_train_dir, temp_validate_dir
 
@@ -151,10 +155,8 @@ classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
 train_data_dir, validation_data_dir, model_path = prep_files_for_training(
     classes)
 
-nb_train_samples = sum(len(files) for _, _, files in os.walk(
-    os.path.join(train_data_dir, classes[0])))
-nb_validation_samples = sum(len(files) for _, _, files in os.walk(
-    os.path.join(validation_data_dir, classes[0])))
+train_size = get_class_stats(classes, train_data_dir)[classes[0]]
+validation_size = get_class_stats(classes, validation_data_dir)[classes[0]]
 
 epochs = 50
 batch_size = 15
@@ -162,7 +164,7 @@ batch_size = 15
 model = compile_model(img_width, img_height)
 
 train_model(train_data_dir, validation_data_dir, img_width, img_height,
-            nb_train_samples, nb_validation_samples, epochs, batch_size, model, model_path)
+            train_size, validation_size, epochs, batch_size, model, model_path)
 
 shutil.rmtree(train_data_dir)
 shutil.rmtree(validation_data_dir)
