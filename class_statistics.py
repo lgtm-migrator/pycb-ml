@@ -20,6 +20,10 @@ def print_statistics(stats):
     for key in stats:
         print(f"{key} : {stats[key]}")
 
+def save_stats_to_file(stats, file_path):
+    with open(file_path, 'w') as f:
+        for key in stats:
+            f.write(f"{key} : {stats[key]}")
 
 if __name__ == "__main__":
     classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
