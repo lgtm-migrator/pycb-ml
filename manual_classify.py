@@ -31,7 +31,8 @@ def prepare_files(classes):
     file_names = [os.path.join(pre_process_data_dir, file_name) for file_name in next(
         os.walk(pre_process_data_dir), (None, None, []))[2]]
     try:
-        file_names.sort(key=lambda x: int(os.path.basename(x).replace(".png", "")))
+        file_names.sort(key=lambda x: int(
+            os.path.basename(x).replace(".png", "")))
     except ValueError:
         file_names.sort(key=lambda x: os.path.basename(x).replace(".png", ""))
     # define training data dir, make if not there
@@ -127,8 +128,11 @@ def prompt_for_class(classes: list[str], file_name: str, image_crops: list[str])
             sg.Button("C2", image_data=image_crops[7]),
             sg.Button("C3", image_data=image_crops[8])
         ],
-        [sg.Button("Exit"), sg.Text(
-            file_name, size=(63, None)), sg.Button("None(n)")]
+        [
+            sg.Button("Exit", size=(11, 11)),
+            sg.Text(file_name, size=(50, None)),
+            sg.Button("None", size=(11, 11))
+        ]
     ]
     # define GUI window
     window = sg.Window(
