@@ -2,9 +2,10 @@ import os
 import random
 import time
 from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential
+from keras.models import Sequential, Model
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense
+from keras.applications.vgg16 import VGG16
 from keras import backend as K
 import tempfile
 import shutil
@@ -37,7 +38,7 @@ def copy_files_to_temp(classes, train_data_dir):
 
         # get file list for class cut to smallest class size
         file_names = [os.path.join(class_data_dir, file_name) for file_name in next(
-            os.walk(class_data_dir), (None, None, []))[2]][:smallest_class_size]
+            os.walk(class_data_dir), (None, None, []))[2]]#[:smallest_class_size]
 
         # calculate sample sizes
         validation_proportion = 0.2
@@ -57,7 +58,6 @@ def copy_files_to_temp(classes, train_data_dir):
             temp_train_dir, class_name))
 
     print("Normalized training data stats:")
-    print("Input data stats:")
     print_statistics(get_class_stats(classes, temp_train_dir))
     print("Normalized validation data stats:")
     print_statistics(get_class_stats(classes, temp_validate_dir))
@@ -72,8 +72,7 @@ def prep_files_for_training(classes):
     model_path = os.path.join(
         module_path,
         "models",
-        str(int(time.time())),
-        "model_saved.m5"
+        f"{str(int(time.time()))}.m5"
     )
 
     temp_train_dir, temp_validate_dir = copy_files_to_temp(
@@ -83,67 +82,87 @@ def prep_files_for_training(classes):
 
 
 def compile_model(img_width, img_height):
-    # reference https://www.geeksforgeeks.org/python-image-classification-using-keras/
     if K.image_data_format() == 'channels_first':
         input_shape = (3, img_width, img_height)
     else:
         input_shape = (img_width, img_height, 3)
 
-    model = Sequential()
-    model.add(Conv2D(32, (2, 2), input_shape=input_shape))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    model.add(Conv2D(32, (2, 2)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    model.add(Conv2D(64, (2, 2)))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    model.add(Flatten())
-    model.add(Dense(128))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(1))
-    model.add(Activation('softmax'))
-
-    model.compile(loss='binary_crossentropy',
-                  optimizer='rmsprop',
-                  metrics=['accuracy'])
-
+    model = VGG16(weights='imagenet', include_top=False)
+    model = VGG16(include_top=False, input_shape=input_shape)
+    flat1 = Flatten()(model.layers[-1].output)
+    class1 = Dense(256, activation='relu',
+                   kernel_initializer='he_uniform')(flat1)
+    output = Dense(10, activation='softmax')(class1)
+    # define new model
+    model = Model(inputs=model.inputs, outputs=output)
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     return model
 
 
-def train_model(train_data_dir, validation_data_dir, img_width, img_height, nb_train_samples, nb_validation_samples, epochs, batch_size, model, model_path):
     # reference https://www.geeksforgeeks.org/python-image-classification-using-keras/
-    train_datagen = ImageDataGenerator(
-        rescale=1. / 255,
-        shear_range=0.2,
-        zoom_range=0.2,
-        horizontal_flip=True)
+    # if K.image_data_format() == 'channels_first':
+    #     input_shape = (3, img_width, img_height)
+    # else:
+    #     input_shape = (img_width, img_height, 3)
 
-    test_datagen = ImageDataGenerator(rescale=1. / 255)
+    # model = Sequential()
+    # model.add(Conv2D(32, (2, 2), input_shape=input_shape))
+    # model.add(Activation('relu'))
+    # model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    # model.add(Conv2D(32, (2, 2)))
+    # model.add(Activation('relu'))
+    # model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    # model.add(Conv2D(64, (2, 2)))
+    # model.add(Activation('relu'))
+    # model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    # model.add(Flatten())
+    # model.add(Dense(128))
+    # model.add(Activation('relu'))
+    # model.add(Dropout(0.5))
+    # model.add(Dense(1))
+    # model.add(Activation('softmax'))
+
+    # model.compile(loss='binary_crossentropy',
+    #               optimizer='rmsprop',
+    #               metrics=['accuracy'])
+
+    # return model
+
+
+def train_model(train_data_dir, validation_data_dir, img_width, img_height, epochs, batch_size, model, model_path):
+    # reference https://www.geeksforgeeks.org/python-image-classification-using-keras/
+    train_datagen = ImageDataGenerator()
+
+    test_datagen = ImageDataGenerator()
 
     train_generator = train_datagen.flow_from_directory(
         train_data_dir,
         target_size=(img_width, img_height),
         batch_size=batch_size,
-        class_mode='binary')
+        class_mode='binary',
+        shuffle=True
+    )
 
     validation_generator = test_datagen.flow_from_directory(
         validation_data_dir,
         target_size=(img_width, img_height),
         batch_size=batch_size,
-        class_mode='binary')
+        class_mode='binary',
+        shuffle=False)
 
-    model.fit_generator(
+    STEP_SIZE_TRAIN = train_generator.n//train_generator.batch_size
+    STEP_SIZE_VALID = validation_generator.n//validation_generator.batch_size
+
+    model.fit(
         train_generator,
-        steps_per_epoch=nb_train_samples // batch_size,
-        epochs=epochs,
+        steps_per_epoch=STEP_SIZE_TRAIN,
         validation_data=validation_generator,
-        validation_steps=nb_validation_samples // batch_size)
+        validation_steps=STEP_SIZE_VALID,
+        epochs=epochs)
 
     model.save_weights(model_path)
 
@@ -158,13 +177,13 @@ train_data_dir, validation_data_dir, model_path = prep_files_for_training(
 train_size = get_class_stats(classes, train_data_dir)[classes[0]]
 validation_size = get_class_stats(classes, validation_data_dir)[classes[0]]
 
-epochs = 50
-batch_size = 15
+epochs = 10
+batch_size = 16
 
 model = compile_model(img_width, img_height)
 
-train_model(train_data_dir, validation_data_dir, img_width, img_height,
-            train_size, validation_size, epochs, batch_size, model, model_path)
+train_model(train_data_dir, validation_data_dir, img_width,
+            img_height, epochs, batch_size, model, model_path)
 
 shutil.rmtree(train_data_dir)
 shutil.rmtree(validation_data_dir)
