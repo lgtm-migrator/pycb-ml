@@ -6,15 +6,11 @@ from keras.applications.vgg16 import VGG16
 from keras.layers import Dense, Flatten
 from keras.models import Model
 from keras.preprocessing.image import ImageDataGenerator
-from keras.utils import set_random_seed
-from numpy.random import seed
 from pandas import DataFrame
 
 from class_statistics import get_class_stats, save_stats_to_file
 from file_utils import clean_up_after_training, prep_files_for_training
 
-set_random_seed(8)
-seed(8)
 
 
 def compile_model(img_width, img_height):
@@ -28,7 +24,7 @@ def compile_model(img_width, img_height):
     flat1 = Flatten()(model.layers[-1].output)
     class1 = Dense(256, activation='relu',
                    kernel_initializer='he_uniform')(flat1)
-    output = Dense(10, activation='softmax')(class1)
+    output = Dense(36, activation='softmax')(class1)
     # define new model
     model = Model(inputs=model.inputs, outputs=output)
     model.compile(optimizer='adam',
@@ -136,7 +132,7 @@ if __name__ == "__main__":
     classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
 
     # training params
-    epochs = 17
+    epochs = 7
     batch_size = 24
 
     main(img_width, img_height, classes, epochs, batch_size)
