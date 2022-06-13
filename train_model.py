@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import time
 
+import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.applications.vgg16 import VGG16
 from keras.layers import Dense, Flatten
@@ -75,7 +76,7 @@ def prep_files_for_training(classes):
 
     train_data_dir = os.path.join(module_path, 'data', 'train')
 
-    model_path = os.path.join(
+    model_save_path = os.path.join(
         module_path,
         "models",
         f"save{str(int(time.time()))}"
@@ -84,7 +85,7 @@ def prep_files_for_training(classes):
     temp_train_dir, temp_validate_dir = copy_files_to_temp(
         classes, train_data_dir)
 
-    return temp_train_dir, temp_validate_dir, model_path
+    return temp_train_dir, temp_validate_dir, model_save_path
 
 
 def compile_model(img_width, img_height):
@@ -105,40 +106,9 @@ def compile_model(img_width, img_height):
                   loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     return model
 
-    # reference https://www.geeksforgeeks.org/python-image-classification-using-keras/
-    # if K.image_data_format() == 'channels_first':
-    #     input_shape = (3, img_width, img_height)
-    # else:
-    #     input_shape = (img_width, img_height, 3)
-
-    # model = Sequential()
-    # model.add(Conv2D(32, (2, 2), input_shape=input_shape))
-    # model.add(Activation('relu'))
-    # model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # model.add(Conv2D(32, (2, 2)))
-    # model.add(Activation('relu'))
-    # model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # model.add(Conv2D(64, (2, 2)))
-    # model.add(Activation('relu'))
-    # model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # model.add(Flatten())
-    # model.add(Dense(128))
-    # model.add(Activation('relu'))
-    # model.add(Dropout(0.5))
-    # model.add(Dense(1))
-    # model.add(Activation('softmax'))
-
-    # model.compile(loss='binary_crossentropy',
-    #               optimizer='rmsprop',
-    #               metrics=['accuracy'])
-
-    # return model
 
 
-def train_model(train_data_dir, validation_data_dir, img_width, img_height, epochs, batch_size, model, model_path):
+def train_model(train_data_dir, validation_data_dir, img_width, img_height, epochs, batch_size, model: Model, model_save_path):
     # reference https://www.geeksforgeeks.org/python-image-classification-using-keras/
     train_datagen = ImageDataGenerator()
     validation_datagen = ImageDataGenerator()
@@ -161,33 +131,55 @@ def train_model(train_data_dir, validation_data_dir, img_width, img_height, epoc
     STEP_SIZE_TRAIN = train_generator.n//train_generator.batch_size
     STEP_SIZE_VALID = validation_generator.n//validation_generator.batch_size
 
-    model.fit(
+    history = model.fit(
         train_generator,
         steps_per_epoch=STEP_SIZE_TRAIN,
         validation_data=validation_generator,
         validation_steps=STEP_SIZE_VALID,
         epochs=epochs)
 
-    model.save(model_path)
+    model.save(model_save_path)
+    return history
+
+
+def plot_history(history, model_save_path):
+    # summarize history for accuracy
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.savefig(os.path.join(model_save_path, "model_accuracy.png"))
+# summarize history for loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.savefig(os.path.join(model_save_path, "model_loss.png"))
 
 
 img_width, img_height = 290, 325
 classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
 
 
-train_data_dir, validation_data_dir, model_path = prep_files_for_training(
+train_data_dir, validation_data_dir, model_save_path = prep_files_for_training(
     classes)
 
 train_size = get_class_stats(classes, train_data_dir)[classes[0]]
 validation_size = get_class_stats(classes, validation_data_dir)[classes[0]]
 
-epochs = 10
+epochs = 200
 batch_size = 16
 
 model = compile_model(img_width, img_height)
 
-train_model(train_data_dir, validation_data_dir, img_width,
-            img_height, epochs, batch_size, model, model_path)
+history = train_model(train_data_dir, validation_data_dir, img_width,
+                      img_height, epochs, batch_size, model, model_save_path)
+
+plot_history(history, model_save_path)
 
 shutil.rmtree(train_data_dir)
 shutil.rmtree(validation_data_dir)
