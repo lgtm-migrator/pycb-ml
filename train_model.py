@@ -1,16 +1,21 @@
 import os
 import random
-import time
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential, Model
-from keras.layers import Conv2D, MaxPooling2D
-from keras.layers import Activation, Dropout, Flatten, Dense
-from keras.applications.vgg16 import VGG16
-from keras import backend as K
-import tempfile
 import shutil
+import tempfile
+import time
+
+from keras import backend as K
+from keras.applications.vgg16 import VGG16
+from keras.layers import Dense, Flatten
+from keras.models import Model
+from keras.preprocessing.image import ImageDataGenerator
+from keras.utils import set_random_seed
+from numpy.random import seed
 
 from data_statistics import get_class_stats, print_statistics
+
+set_random_seed(2)
+seed(1)
 
 
 def copy_list_of_files(file_list, desitation_dir):
@@ -38,7 +43,7 @@ def copy_files_to_temp(classes, train_data_dir):
 
         # get file list for class cut to smallest class size
         file_names = [os.path.join(class_data_dir, file_name) for file_name in next(
-            os.walk(class_data_dir), (None, None, []))[2]]#[:smallest_class_size]
+            os.walk(class_data_dir), (None, None, []))[2]]  # [:smallest_class_size]
 
         # calculate sample sizes
         validation_proportion = 0.2
@@ -67,12 +72,13 @@ def copy_files_to_temp(classes, train_data_dir):
 
 def prep_files_for_training(classes):
     module_path = os.path.dirname(os.path.realpath(__file__))
+
     train_data_dir = os.path.join(module_path, 'data', 'train')
 
     model_path = os.path.join(
         module_path,
         "models",
-        f"{str(int(time.time()))}.m5"
+        f"save{str(int(time.time()))}"
     )
 
     temp_train_dir, temp_validate_dir = copy_files_to_temp(
@@ -98,7 +104,6 @@ def compile_model(img_width, img_height):
     model.compile(optimizer='adam',
                   loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     return model
-
 
     # reference https://www.geeksforgeeks.org/python-image-classification-using-keras/
     # if K.image_data_format() == 'channels_first':
@@ -136,8 +141,7 @@ def compile_model(img_width, img_height):
 def train_model(train_data_dir, validation_data_dir, img_width, img_height, epochs, batch_size, model, model_path):
     # reference https://www.geeksforgeeks.org/python-image-classification-using-keras/
     train_datagen = ImageDataGenerator()
-
-    test_datagen = ImageDataGenerator()
+    validation_datagen = ImageDataGenerator()
 
     train_generator = train_datagen.flow_from_directory(
         train_data_dir,
@@ -147,7 +151,7 @@ def train_model(train_data_dir, validation_data_dir, img_width, img_height, epoc
         shuffle=True
     )
 
-    validation_generator = test_datagen.flow_from_directory(
+    validation_generator = validation_datagen.flow_from_directory(
         validation_data_dir,
         target_size=(img_width, img_height),
         batch_size=batch_size,
@@ -164,7 +168,7 @@ def train_model(train_data_dir, validation_data_dir, img_width, img_height, epoc
         validation_steps=STEP_SIZE_VALID,
         epochs=epochs)
 
-    model.save_weights(model_path)
+    model.save(model_path)
 
 
 img_width, img_height = 290, 325
