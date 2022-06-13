@@ -12,7 +12,7 @@ def copy_list_of_files(file_list, desitation_dir):
         shutil.copy2(file_name, desitation_dir)
 
 
-def copy_files_to_temp(classes, train_data_dir):
+def copy_files_to_temp(classes, train_data_dir, normalize=False):
     temp_train_dir = tempfile.mkdtemp()
     temp_validate_dir = tempfile.mkdtemp()
 
@@ -32,7 +32,9 @@ def copy_files_to_temp(classes, train_data_dir):
 
         # get file list for class cut to smallest class size
         file_names = [os.path.join(class_data_dir, file_name) for file_name in next(
-            os.walk(class_data_dir), (None, None, []))[2]][:smallest_class_size]
+            os.walk(class_data_dir), (None, None, []))[2]]
+        if normalize:
+            file_names = file_names[:smallest_class_size]
 
         # calculate sample sizes
         validation_proportion = 0.2
@@ -59,7 +61,7 @@ def copy_files_to_temp(classes, train_data_dir):
     return temp_train_dir, temp_validate_dir
 
 
-def prep_files_for_training(classes):
+def prep_files_for_training(classes, normalize=False):
     module_path = os.path.dirname(os.path.realpath(__file__))
 
     train_data_dir = os.path.join(module_path, 'data', 'train')
@@ -71,7 +73,7 @@ def prep_files_for_training(classes):
     )
 
     temp_train_dir, temp_validate_dir = copy_files_to_temp(
-        classes, train_data_dir)
+        classes, train_data_dir, normalize)
 
     return temp_train_dir, temp_validate_dir, model_save_path
 
