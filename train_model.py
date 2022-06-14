@@ -86,7 +86,8 @@ def save_model_history(history, model_save_path, train_class_stats, validation_c
         accuracy_history,
         x="epoch",
         y=[accuracy_history['accuracy'], accuracy_history['val_accuracy']],
-        title=f"Accuracy history - {os.path.basename(model_save_path)}"
+        title=f"Accuracy history - {os.path.basename(model_save_path)}",
+        template="plotly_dark"
     )
     fig.write_html(os.path.join(model_save_path, "model_accuracy.html"))
 
@@ -99,7 +100,8 @@ def save_model_history(history, model_save_path, train_class_stats, validation_c
         loss_history,
         x="epoch",
         y=[loss_history['loss'], loss_history['val_loss']],
-        title=f"Loss history - {os.path.basename(model_save_path)}"
+        title=f"Loss history - {os.path.basename(model_save_path)}",
+        template="plotly_dark"
     )
     fig.write_html(os.path.join(model_save_path, "model_loss.html"))
 
