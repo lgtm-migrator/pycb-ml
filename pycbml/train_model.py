@@ -13,6 +13,7 @@ from pycbml.file_utils import clean_up_after_training, prep_files_for_training
 
 
 def compile_model(img_width, img_height, classes):
+    print("Compiling model...")
     if K.image_data_format() == 'channels_first':
         input_shape = (3, img_width, img_height)
     else:
@@ -69,6 +70,7 @@ def fit_model(train_data_dir, validation_data_dir, img_width, img_height, epochs
 
 
 def save_model_history(history, model_save_path, train_class_stats, validation_class_stats):
+    print("Saving training history plots...")
     # save stats to file
     save_stats_to_file(
         train_class_stats,
@@ -130,17 +132,3 @@ def main(img_width, img_height, classes, epochs, batch_size, normalize=False, ba
         clean_up_after_training(train_data_dir, validation_data_dir)
 
 
-if __name__ == "__main__":
-    # image and class params
-    img_width, img_height = 290, 325
-    classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
-
-    # training params
-    epochs = 30
-    batch_size = 32
-
-    main(img_width,
-         img_height,
-         classes,
-         epochs,
-         batch_size)
