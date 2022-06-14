@@ -17,8 +17,6 @@ def copy_files_to_temp(classes, train_data_dir, normalize=False):
     temp_validate_dir = tempfile.mkdtemp()
 
     class_stats = get_class_stats(classes, train_data_dir)
-    print("Input data stats:")
-    print_statistics(class_stats)
 
     # get value to normalize training data count
     smallest_class_size = min(class_stats.values())
@@ -53,9 +51,9 @@ def copy_files_to_temp(classes, train_data_dir, normalize=False):
         copy_list_of_files(train_sample, os.path.join(
             temp_train_dir, class_name))
 
-    print("Normalized training data stats:")
+    print("Training class stats:")
     print_statistics(get_class_stats(classes, temp_train_dir))
-    print("Normalized validation data stats:")
+    print("Validation class stats:")
     print_statistics(get_class_stats(classes, temp_validate_dir))
 
     return temp_train_dir, temp_validate_dir
