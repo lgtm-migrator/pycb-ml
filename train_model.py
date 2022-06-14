@@ -108,7 +108,7 @@ def save_model_history(history, model_save_path, train_class_stats, validation_c
 def main(img_width, img_height, classes, epochs, batch_size, normalize=False):
     # collect stats on and prepare training and validation files
     train_data_dir, validation_data_dir, model_save_path = prep_files_for_training(
-        classes, normalize)
+        classes, normalize, base_path=os.path.dirname(os.path.realpath(__file__)))
 
     train_class_stats = get_class_stats(classes, train_data_dir)
     validation_class_stats = get_class_stats(classes, validation_data_dir)

@@ -5,7 +5,7 @@ train_data_dir = os.path.join(module_path, 'data', 'train')
 validation_data_dir = os.path.join(module_path, 'data', 'validate')
 
 
-def get_class_stats(classes, data_dir) -> dict[str, int]:
+def get_class_stats(classes, data_dir):
     stats = dict()
     for class_name in classes:
         class_data_dir = os.path.join(data_dir, class_name)
