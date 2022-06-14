@@ -7,7 +7,7 @@ import time
 from pycbml.class_statistics import class_stats, print_statistics
 
 
-def copy_list_of_files_to_temp(file_list: list[str], temp_dir: str):
+def copy_list_of_files_to_temp(file_list, temp_dir):
     for file_name in file_list:
         shutil.copy2(
             file_name,
@@ -15,7 +15,7 @@ def copy_list_of_files_to_temp(file_list: list[str], temp_dir: str):
         )
 
 
-def copy_files_to_temp(classes: list[str], train_sample: list[str], validation_sample: list[str]):
+def copy_files_to_temp(classes, train_sample, validation_sample):
     temp_train_dir = tempfile.mkdtemp()
     temp_validate_dir = tempfile.mkdtemp()
     for class_name in classes:
@@ -30,7 +30,7 @@ def copy_files_to_temp(classes: list[str], train_sample: list[str], validation_s
     return temp_train_dir, temp_validate_dir
 
 
-def split_training_files(classes: list[str], train_data_dir: str, normalize=False,  validation_rate=0.25) -> tuple[list[str], list[str]]:
+def split_training_files(classes, train_data_dir, normalize=False,  validation_rate=0.25):
 
     # get value to normalize training data count
     smallest_class_size = min(class_stats(
@@ -64,7 +64,7 @@ def split_training_files(classes: list[str], train_data_dir: str, normalize=Fals
     return train_sample, validation_sample
 
 
-def prep_files_for_training(classes: list[str], normalize=False, base_path=os.path.dirname(os.path.realpath(__file__)), use_temp_dir=False):
+def prep_files_for_training(classes, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__)), use_temp_dir=False):
     print("Preparing files for training...")
     train_data_dir = os.path.join(base_path, 'data', 'train')
 
@@ -90,6 +90,6 @@ def prep_files_for_training(classes: list[str], normalize=False, base_path=os.pa
     return train_dir, validate_dir, model_save_path
 
 
-def clean_up_after_training(train_data_dir: str, validation_data_dir: str):
+def clean_up_after_training(train_data_dir, validation_data_dir):
     shutil.rmtree(train_data_dir)
     shutil.rmtree(validation_data_dir)
