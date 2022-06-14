@@ -1,8 +1,8 @@
 import os
 
-module_path = os.path.dirname(os.path.realpath(__file__))
-train_data_dir = os.path.join(module_path, 'data', 'train')
-validation_data_dir = os.path.join(module_path, 'data', 'validate')
+base_path = os.path.dirname(os.path.realpath(__file__))
+train_data_dir = os.path.join(base_path, 'data', 'train')
+validation_data_dir = os.path.join(base_path, 'data', 'validate')
 
 
 def get_class_stats(classes, data_dir):
@@ -20,10 +20,12 @@ def print_statistics(stats):
     for key in stats:
         print(f"{key} : {stats[key]}")
 
+
 def save_stats_to_file(stats, file_path):
     with open(file_path, 'w') as f:
         for key in stats:
             f.write(f"{key} : {stats[key]}")
+
 
 if __name__ == "__main__":
     classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]

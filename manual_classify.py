@@ -1,15 +1,15 @@
 import base64
+import multiprocessing
 import os
 import sys
 import time
 from io import BytesIO
-import multiprocessing
 
 import PySimpleGUI as sg
 from PIL import Image
 
 
-def prepare_files(classes):
+def prepare_files(classes, base_path=os.path.dirname(os.path.realpath(__file__))):
     print("prepping files")
     """make the necessary directories
 
@@ -19,10 +19,8 @@ def prepare_files(classes):
     Returns:
         str, list[str]: training data (output) dir and list of input files
     """
-    # get dir of current file
-    module_path = os.path.dirname(os.path.realpath(__file__))
     # define preprocessed data directory, make if not there
-    pre_process_data_dir = os.path.join(module_path, 'data', 'preprocess')
+    pre_process_data_dir = os.path.join(base_path, 'data', 'preprocess')
     if not os.path.exists(pre_process_data_dir):
         os.makedirs(pre_process_data_dir)
         print("Made preprocesing dir, add images there first, quitting.")
@@ -36,7 +34,7 @@ def prepare_files(classes):
     except ValueError:
         file_names.sort(key=lambda x: os.path.basename(x).replace(".png", ""))
     # define training data dir, make if not there
-    train_data_dir = os.path.join(module_path, 'data', 'train')
+    train_data_dir = os.path.join(base_path, 'data', 'train')
     if not os.path.exists(train_data_dir):
         os.makedirs(train_data_dir)
     # make directories for classes
@@ -172,12 +170,12 @@ def save_classified_image(classes: list[str], train_data_dir: str, file_name: st
     os.remove(file_name)
 
 
-def main() -> None:
+def main(base_path=os.path.dirname(os.path.realpath(__file__))) -> None:
     # classes for which to make folders
     classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
 
     # locate the training data dir and the file names
-    train_data_dir, file_names = prepare_files(classes)
+    train_data_dir, file_names = prepare_files(classes, base_path)
 
     # crop images
     image_crop_dict = crop_images(file_names)

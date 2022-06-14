@@ -12,7 +12,6 @@ from class_statistics import get_class_stats, save_stats_to_file
 from file_utils import clean_up_after_training, prep_files_for_training
 
 
-
 def compile_model(img_width, img_height, classes):
     if K.image_data_format() == 'channels_first':
         input_shape = (3, img_width, img_height)
@@ -105,25 +104,25 @@ def save_model_history(history, model_save_path, train_class_stats, validation_c
     fig.write_html(os.path.join(model_save_path, "model_loss.html"))
 
 
-def main(img_width, img_height, classes, epochs, batch_size, normalize=False):
+def main(img_width, img_height, classes, epochs, batch_size, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__))):
     # collect stats on and prepare training and validation files
     train_data_dir, validation_data_dir, model_save_path = prep_files_for_training(
-        classes, normalize, base_path=os.path.dirname(os.path.realpath(__file__)))
+        classes, normalize, base_path)
+    try:
+        train_class_stats = get_class_stats(classes, train_data_dir)
+        validation_class_stats = get_class_stats(classes, validation_data_dir)
 
-    train_class_stats = get_class_stats(classes, train_data_dir)
-    validation_class_stats = get_class_stats(classes, validation_data_dir)
+        # create and train model, save training info
+        model = compile_model(img_width, img_height, classes)
 
-    # create and train model, save training info
-    model = compile_model(img_width, img_height, classes)
+        history = fit_model(train_data_dir, validation_data_dir, img_width,
+                            img_height, epochs, batch_size, model, model_save_path)
 
-    history = fit_model(train_data_dir, validation_data_dir, img_width,
-                        img_height, epochs, batch_size, model, model_save_path)
-
-    save_model_history(history, model_save_path,
-                       train_class_stats, validation_class_stats)
-
-    # clean up
-    clean_up_after_training(train_data_dir, validation_data_dir)
+        save_model_history(history, model_save_path,
+                           train_class_stats, validation_class_stats)
+    finally:
+        # clean up
+        clean_up_after_training(train_data_dir, validation_data_dir)
 
 
 if __name__ == "__main__":
@@ -135,4 +134,8 @@ if __name__ == "__main__":
     epochs = 4
     batch_size = 16
 
-    main(img_width, img_height, classes, epochs, batch_size)
+    main(img_width,
+         img_height,
+         classes,
+         epochs,
+         batch_size)

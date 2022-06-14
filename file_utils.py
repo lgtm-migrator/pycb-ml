@@ -59,7 +59,8 @@ def copy_files_to_temp(classes, train_data_dir, normalize=False):
     return temp_train_dir, temp_validate_dir
 
 
-def prep_files_for_training(classes, normalize=False, base_path = os.path.dirname(os.path.realpath(__file__))):
+def prep_files_for_training(classes, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__))):
+    print("Preparing files for training...")
     train_data_dir = os.path.join(base_path, 'data', 'train')
 
     model_save_path = os.path.join(
