@@ -9,9 +9,10 @@ from pycbml.class_statistics import class_stats, print_statistics
 
 def copy_list_of_files_to_temp(file_list, temp_dir):
     for file_name in file_list:
+        class_dir = os.path.basename(os.path.dirname(file_name))
         shutil.copy2(
             file_name,
-            os.path.join(temp_dir, os.path.dirname(file_name))
+            os.path.join(temp_dir, class_dir)
         )
 
 
