@@ -5,7 +5,7 @@ train_data_dir = os.path.join(base_path, 'data', 'train')
 validation_data_dir = os.path.join(base_path, 'data', 'validate')
 
 
-def get_class_stats(classes, data_dir):
+def class_stats(classes, data_dir):
     stats = dict()
     for class_name in classes:
         class_data_dir = os.path.join(data_dir, class_name)
@@ -29,5 +29,4 @@ def save_stats_to_file(stats, file_path):
 
 if __name__ == "__main__":
     classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
-    class_stats = get_class_stats(classes, train_data_dir)
-    print_statistics(class_stats)
+    print_statistics(class_stats(classes, train_data_dir))

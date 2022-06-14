@@ -8,7 +8,7 @@ from keras.models import Model
 from keras.preprocessing.image import ImageDataGenerator
 from pandas import DataFrame
 
-from pycbml.class_statistics import get_class_stats, save_stats_to_file
+from pycbml.class_statistics import class_stats, save_stats_to_file
 from pycbml.file_utils import clean_up_after_training, prep_files_for_training
 
 
@@ -116,8 +116,8 @@ def main(img_width, img_height, classes, epochs, batch_size, normalize=False, ba
     train_data_dir, validation_data_dir, model_save_path = prep_files_for_training(
         classes, normalize, base_path)
     try:
-        train_class_stats = get_class_stats(classes, train_data_dir)
-        validation_class_stats = get_class_stats(classes, validation_data_dir)
+        train_class_stats = class_stats(classes, train_data_dir)
+        validation_class_stats = class_stats(classes, validation_data_dir)
 
         # create and train model, save training info
         model = compile_model(img_width, img_height, classes)
