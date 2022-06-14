@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import time
 
-from class_statistics import get_class_stats, print_statistics
+from pycbml.class_statistics import get_class_stats, print_statistics
 
 
 def copy_list_of_files(file_list, desitation_dir):

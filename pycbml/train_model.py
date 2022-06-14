@@ -8,8 +8,8 @@ from keras.models import Model
 from keras.preprocessing.image import ImageDataGenerator
 from pandas import DataFrame
 
-from class_statistics import get_class_stats, save_stats_to_file
-from file_utils import clean_up_after_training, prep_files_for_training
+from pycbml.class_statistics import get_class_stats, save_stats_to_file
+from pycbml.file_utils import clean_up_after_training, prep_files_for_training
 
 
 def compile_model(img_width, img_height, classes):
