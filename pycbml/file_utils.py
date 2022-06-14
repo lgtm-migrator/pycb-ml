@@ -4,11 +4,13 @@ import shutil
 import tempfile
 import time
 
+from tqdm import tqdm
+
 from pycbml.class_statistics import class_stats, print_statistics
 
 
 def copy_list_of_files_to_temp(file_list, temp_dir):
-    for file_name in file_list:
+    for file_name in tqdm(file_list):
         class_dir = os.path.basename(os.path.dirname(file_name))
         shutil.copy2(
             file_name,
@@ -26,8 +28,10 @@ def copy_files_to_temp(classes, train_sample, validation_sample):
         os.makedirs(os.path.join(temp_validate_dir, class_name))
 
     # copy samples into directories
-    copy_list_of_files_to_temp(validation_sample, temp_validate_dir)
+    print("Copying files to temporary training dir...")
     copy_list_of_files_to_temp(train_sample, temp_train_dir)
+    print("Copying files to temporary validation dir...")
+    copy_list_of_files_to_temp(validation_sample, temp_validate_dir)
     return temp_train_dir, temp_validate_dir
 
 
