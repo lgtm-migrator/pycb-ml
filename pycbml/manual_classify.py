@@ -45,7 +45,7 @@ def prepare_files(classes, base_path=os.path.dirname(os.path.realpath(__file__))
     return train_data_dir, file_names
 
 
-def crop_image(file_name: str) -> list[str]:
+def crop_image(file_name):
     print(f"Cropping {os.path.basename(file_name)}")
     """make cropped images
 
@@ -75,7 +75,7 @@ def crop_image(file_name: str) -> list[str]:
     return crops
 
 
-def crop_images(file_names: list[str]) -> dict[str, list[str]]:
+def crop_images(file_names):
     print("Cropping images")
     """crop a list of images
 
@@ -98,7 +98,7 @@ def crop_images(file_names: list[str]) -> dict[str, list[str]]:
     return image_crop_dict
 
 
-def prompt_for_class(classes: list[str], file_name: str, image_crops: list[str]) -> str:
+def prompt_for_class(classes, file_name, image_crops):
     """prompt user to classify image
 
     Args:
@@ -154,7 +154,7 @@ def prompt_for_class(classes: list[str], file_name: str, image_crops: list[str])
             return "None"
 
 
-def save_classified_image(classes: list[str], train_data_dir: str, file_name: str, classification: str) -> None:
+def save_classified_image(classes, train_data_dir, file_name, classification):
     """save image to proper class folder
 
     Args:
@@ -170,7 +170,7 @@ def save_classified_image(classes: list[str], train_data_dir: str, file_name: st
     os.remove(file_name)
 
 
-def main(base_path=os.path.dirname(os.path.realpath(__file__))) -> None:
+def main(base_path=os.path.dirname(os.path.realpath(__file__))):
     # classes for which to make folders
     classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
 
