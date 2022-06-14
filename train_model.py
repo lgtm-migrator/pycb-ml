@@ -133,6 +133,6 @@ if __name__ == "__main__":
 
     # training params
     epochs = 7
-    batch_size = 24
+    batch_size = 64
 
     main(img_width, img_height, classes, epochs, batch_size)
