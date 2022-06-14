@@ -4,29 +4,43 @@ import shutil
 import tempfile
 import time
 
-from pycbml.class_statistics import get_class_stats, print_statistics
+from pycbml.class_statistics import class_stats, print_statistics
 
 
-def copy_list_of_files(file_list, desitation_dir):
+def copy_list_of_files_to_temp(file_list: list[str], temp_dir: str):
     for file_name in file_list:
-        shutil.copy2(file_name, desitation_dir)
+        shutil.copy2(
+            file_name,
+            os.path.join(temp_dir, os.path.dirname(file_name))
+        )
 
 
-def copy_files_to_temp(classes, train_data_dir, normalize=False):
+def copy_files_to_temp(classes: list[str], train_sample: list[str], validation_sample: list[str]):
     temp_train_dir = tempfile.mkdtemp()
     temp_validate_dir = tempfile.mkdtemp()
-
-    class_stats = get_class_stats(classes, train_data_dir)
-
-    # get value to normalize training data count
-    smallest_class_size = min(class_stats.values())
-
     for class_name in classes:
-        class_data_dir = os.path.join(train_data_dir, class_name)
 
         # make dir for class in temp dirs
         os.makedirs(os.path.join(temp_train_dir, class_name))
         os.makedirs(os.path.join(temp_validate_dir, class_name))
+
+    # copy samples into directories
+    copy_list_of_files_to_temp(validation_sample, temp_validate_dir)
+    copy_list_of_files_to_temp(train_sample, temp_train_dir)
+    return temp_train_dir, temp_validate_dir
+
+
+def split_training_files(classes: list[str], train_data_dir: str, normalize=False,  validation_rate=0.25) -> tuple[list[str], list[str]]:
+
+    # get value to normalize training data count
+    smallest_class_size = min(class_stats(
+        classes, train_data_dir).values()) if normalize else None
+
+    validation_sample: list[str] = []
+    train_sample: list[str] = []
+
+    for class_name in classes:
+        class_data_dir = os.path.join(train_data_dir, class_name)
 
         # get file list for class cut to smallest class size
         file_names = [os.path.join(class_data_dir, file_name) for file_name in next(
@@ -35,31 +49,22 @@ def copy_files_to_temp(classes, train_data_dir, normalize=False):
             file_names = file_names[:smallest_class_size]
 
         # calculate sample sizes
-        validation_proportion = 0.25
         validate_sample_size = int(
-            len(file_names) * validation_proportion)
+            len(file_names) * validation_rate)
 
         # create train and validate samples
-        validate_sample = random.sample(
+        class_validate_sample = random.sample(
             file_names, validate_sample_size)
-        train_sample = [
-            x for x in file_names if x not in validate_sample]
+        class_train_sample = [
+            x for x in file_names if x not in class_validate_sample]
 
-        # copy samples into directories
-        copy_list_of_files(validate_sample, os.path.join(
-            temp_validate_dir, class_name))
-        copy_list_of_files(train_sample, os.path.join(
-            temp_train_dir, class_name))
-
-    print("Training class stats:")
-    print_statistics(get_class_stats(classes, temp_train_dir))
-    print("Validation class stats:")
-    print_statistics(get_class_stats(classes, temp_validate_dir))
-
-    return temp_train_dir, temp_validate_dir
+        # add samples to list
+        train_sample += class_train_sample
+        validation_sample += class_validate_sample
+    return train_sample, validation_sample
 
 
-def prep_files_for_training(classes, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__))):
+def prep_files_for_training(classes: list[str], normalize=False, base_path=os.path.dirname(os.path.realpath(__file__)), use_temp_dir=False):
     print("Preparing files for training...")
     train_data_dir = os.path.join(base_path, 'data', 'train')
 
@@ -69,12 +74,22 @@ def prep_files_for_training(classes, normalize=False, base_path=os.path.dirname(
         f"save{str(int(time.time()))}"
     )
 
-    temp_train_dir, temp_validate_dir = copy_files_to_temp(
-        classes, train_data_dir, normalize)
+    train_sample, validation_sample = split_training_files(
+        classes,
+        train_data_dir,
+        normalize,
+        validation_rate=0.25
+    )
 
-    return temp_train_dir, temp_validate_dir, model_save_path
+    train_dir, validate_dir = copy_files_to_temp(
+        classes, train_sample, validation_sample)
+
+    print_statistics(class_stats(classes, train_dir))
+    print_statistics(class_stats(classes, validate_dir))
+
+    return train_dir, validate_dir, model_save_path
 
 
-def clean_up_after_training(train_data_dir, validation_data_dir):
+def clean_up_after_training(train_data_dir: str, validation_data_dir: str):
     shutil.rmtree(train_data_dir)
     shutil.rmtree(validation_data_dir)
