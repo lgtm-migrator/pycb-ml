@@ -133,8 +133,8 @@ if __name__ == "__main__":
     classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
 
     # training params
-    epochs = 15
-    batch_size = 64
+    epochs = 50
+    batch_size = 32
 
     main(img_width,
          img_height,
