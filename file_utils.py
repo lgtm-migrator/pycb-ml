@@ -35,7 +35,7 @@ def copy_files_to_temp(classes, train_data_dir, normalize=False):
             file_names = file_names[:smallest_class_size]
 
         # calculate sample sizes
-        validation_proportion = 0.2
+        validation_proportion = 0.25
         validate_sample_size = int(
             len(file_names) * validation_proportion)
 
