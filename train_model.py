@@ -21,13 +21,16 @@ def compile_model(img_width, img_height, classes):
     model = VGG16(weights='imagenet', include_top=False)
     model = VGG16(include_top=False, input_shape=input_shape)
     flat1 = Flatten()(model.layers[-1].output)
-    class1 = Dense(256, activation='relu',
+    class1 = Dense(128, activation='relu',
                    kernel_initializer='he_uniform')(flat1)
-    output = Dense(len(classes), activation='softmax')(class1)
+    class2 = Dense(64, activation='relu',
+                   kernel_initializer='he_uniform')(class1)
+    output = Dense(len(classes), activation='softmax')(class2)
     # define new model
     model = Model(inputs=model.inputs, outputs=output)
     model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
     return model
 
 
