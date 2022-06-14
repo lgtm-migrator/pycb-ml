@@ -23,7 +23,7 @@ setup(
     download_url='https://github.com/marmig0404/pycb-ml/releases',
     install_requires=['keras', 'tensorflow', 'pyautogui',
                       'pillow', 'pandas', 'plotly', 'ipython',
-                      'tqdm'],
+                      'tqdm', 'scipy'],
     packages=['pycbml'],
     python_requires='>=3',
     zip_safe=False,
