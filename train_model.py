@@ -13,7 +13,7 @@ from file_utils import clean_up_after_training, prep_files_for_training
 
 
 
-def compile_model(img_width, img_height):
+def compile_model(img_width, img_height, classes):
     if K.image_data_format() == 'channels_first':
         input_shape = (3, img_width, img_height)
     else:
@@ -24,7 +24,7 @@ def compile_model(img_width, img_height):
     flat1 = Flatten()(model.layers[-1].output)
     class1 = Dense(256, activation='relu',
                    kernel_initializer='he_uniform')(flat1)
-    output = Dense(36, activation='softmax')(class1)
+    output = Dense(len(classes), activation='softmax')(class1)
     # define new model
     model = Model(inputs=model.inputs, outputs=output)
     model.compile(optimizer='adam',
@@ -114,7 +114,7 @@ def main(img_width, img_height, classes, epochs, batch_size, normalize=False):
     validation_class_stats = get_class_stats(classes, validation_data_dir)
 
     # create and train model, save training info
-    model = compile_model(img_width, img_height)
+    model = compile_model(img_width, img_height, classes)
 
     history = fit_model(train_data_dir, validation_data_dir, img_width,
                         img_height, epochs, batch_size, model, model_save_path)
@@ -133,6 +133,6 @@ if __name__ == "__main__":
 
     # training params
     epochs = 7
-    batch_size = 64
+    batch_size = 16
 
     main(img_width, img_height, classes, epochs, batch_size)
