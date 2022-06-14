@@ -22,7 +22,7 @@ setup(
     url='https://github.com/marmig0404/pycb-ml',
     download_url='https://github.com/marmig0404/pycb-ml/releases',
     install_requires=['keras', 'tensorflow', 'pyautogui',
-                      'pillow', 'pandas', 'plotly'],
+                      'pillow', 'pandas', 'plotly', 'ipython'],
     packages=['pycbml'],
     python_requires='>=3',
     zip_safe=False,
