@@ -5,14 +5,14 @@ from keras.preprocessing.image import ImageDataGenerator
 from sklearn.metrics import classification_report
 import numpy
 
+from pycbml.file_utils import prepare_files
+
 
 def eval_and_test_model(img_width, img_height, base_path, model_name):
-    model_path = os.path.join(
-    base_path,
-    "models",
-    model_name
-    )
-    test_data_dir = os.path.join(os.getcwd(),"test")
+    model_save_path, data_dir = prepare_files(base_path, overwrite=False)
+    
+    model_path = os.path.join(model_save_path, model_name)
+    test_data_dir = os.path.join(data_dir, "test")
 
     test_generator = ImageDataGenerator().flow_from_directory(
         test_data_dir,

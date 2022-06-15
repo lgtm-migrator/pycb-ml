@@ -8,6 +8,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from pandas import DataFrame
 
 from pycbml.class_statistics import class_stats, print_statistics
+from pycbml.file_utils import prepare_files
 
 
 def create_VGG16_transfer_model(classes, input_shape):
@@ -125,15 +126,12 @@ def save_model_history(history, model_save_path):
     return os.path.basename(model_save_path)
 
 
-def prepare_files(base_path):
 
-    train_data_dir = os.path.join(os.getcwd(), "train")
-    model_save_path = os.path.join(base_path, "models")
-    return train_data_dir, model_save_path
 
 
 def main(img_width, img_height, classes, epochs, batch_size, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__))):
-    train_data_dir, model_save_path = prepare_files(base_path)
+    data_dir, model_save_path = prepare_files(base_path, overwrite=False)
+    train_data_dir = os.path.join(data_dir, "train")
     print_statistics(class_stats(classes, train_data_dir))
 
     # create and train model, save training info
