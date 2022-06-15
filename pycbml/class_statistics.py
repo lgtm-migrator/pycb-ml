@@ -1,4 +1,5 @@
 import os
+from tabulate import tabulate
 
 base_path = os.path.dirname(os.path.realpath(__file__))
 train_data_dir = os.path.join(base_path, 'data', 'train')
@@ -17,10 +18,8 @@ def class_stats(classes, data_dir):
 
 
 def print_statistics(stats):
-    for key in stats:
-        print(f"{key} : {stats[key]}")
-
-
+    data = [[[key, stats[key]] for key in stats]]
+    print(tabulate(data, headers=["Class Name", "Number of Images"]))
 
 
 if __name__ == "__main__":
