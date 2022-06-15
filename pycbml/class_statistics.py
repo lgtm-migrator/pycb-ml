@@ -18,7 +18,7 @@ def class_stats(classes, data_dir):
 
 
 def print_statistics(stats):
-    data = [[[key, stats[key]] for key in stats]]
+    data = [stats.keys(), stats.values()]
     print(tabulate(data, headers=["Class Name", "Number of Images"]))
 
 
