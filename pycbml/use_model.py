@@ -6,9 +6,10 @@ import random
 import numpy as np
 from keras.models import load_model
 from keras.utils import load_img
+from keras.applications.vgg16 import decode_predictions
 from glob import glob
 
-model_name = "save1655174607"
+model_name = "save1655230795"
 img_width, img_height = (290, 325)
 
 base_path = os.path.dirname(os.path.realpath(__file__))
@@ -21,7 +22,7 @@ model_path = os.path.join(
 model = load_model(model_path)
 
 file_names = glob(os.path.join(base_path, "data", "train", "*", "*.png"))
-image_names = random.sample(file_names, int(0.1*len(file_names)))
+image_names = random.sample(file_names, 25)
 
 for test_image in image_names:
     image = load_img(test_image, target_size=(img_width, img_height))
@@ -29,6 +30,7 @@ for test_image in image_names:
     img = img / 255.0
     img = img.reshape(1, img_width, img_height, 3)
     label = model.predict(img)
-    round_label = np.around(label)
+    label = decode_predictions(label)
+    #round_label = np.around(label)
 
-    print("Predicted Class: ", round_label, label)
+    print(f"Actual Class: {os.path.basename(os.path.dirname(test_image))} - Predicted Class: {label[0][0]}")
