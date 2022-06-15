@@ -1,5 +1,4 @@
 import os
-from glob import glob
 
 from keras.models import load_model
 from keras.preprocessing.image import ImageDataGenerator
@@ -13,7 +12,7 @@ def eval_and_test_model(img_width, img_height, base_path, model_name):
     "models",
     model_name
     )
-    test_data_dir = os.path.join(base_path,"data", "test")
+    test_data_dir = os.path.join(os.getcwd(),"test")
 
     test_generator = ImageDataGenerator().flow_from_directory(
         test_data_dir,
@@ -35,6 +34,4 @@ if __name__ == "__main__":
     img_width, img_height = 290, 325
 
     base_path = os.path.dirname(os.path.realpath(__file__))
-    base_path = os.path.join("C:\\", "Google Drive",
-                            "Programming", "Python", "pycb-ml")
     eval_and_test_model(img_width, img_height, base_path, model_name)

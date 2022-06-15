@@ -125,9 +125,15 @@ def save_model_history(history, model_save_path):
     return os.path.basename(model_save_path)
 
 
-def main(img_width, img_height, classes, epochs, batch_size, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__))):
-    train_data_dir = os.path.join(base_path, "data", "train")
+def prepare_files(base_path):
+
+    train_data_dir = os.path.join(os.getcwd(), "train")
     model_save_path = os.path.join(base_path, "models")
+    return train_data_dir, model_save_path
+
+
+def main(img_width, img_height, classes, epochs, batch_size, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__))):
+    train_data_dir, model_save_path = prepare_files(base_path)
     print_statistics(class_stats(classes, train_data_dir))
 
     # create and train model, save training info
