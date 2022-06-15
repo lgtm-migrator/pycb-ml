@@ -9,7 +9,7 @@ from pycbml.file_utils import prepare_files
 
 
 def eval_and_test_model(img_width, img_height, base_path, model_name):
-    model_save_path, data_dir = prepare_files(base_path, overwrite=False)
+    data_dir, model_save_path = prepare_files(base_path, overwrite=False)
     
     model_path = os.path.join(model_save_path, model_name)
     test_data_dir = os.path.join(data_dir, "test")
