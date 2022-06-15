@@ -1,4 +1,5 @@
 import os
+import time
 
 import plotly.express as px
 from keras.applications.vgg16 import VGG16
@@ -126,12 +127,10 @@ def save_model_history(history, model_save_path):
     return os.path.basename(model_save_path)
 
 
-
-
-
 def main(img_width, img_height, classes, epochs, batch_size, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__))):
-    data_dir, model_save_path = prepare_files(base_path, overwrite=False)
+    data_dir, model_save_dir = prepare_files(base_path, overwrite=False)
     train_data_dir = os.path.join(data_dir, "train")
+    model_save_path = os.path.join(model_save_dir, f"{int(time.time())}save")
     print_statistics(class_stats(classes, train_data_dir))
 
     # create and train model, save training info
