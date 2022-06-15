@@ -2,19 +2,19 @@ import os
 
 import plotly.express as px
 from keras.applications.vgg16 import VGG16
-from keras.layers import Dense, Flatten, Input, Conv2D, MaxPooling2D
+from keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
 from keras.models import Model, Sequential
 from keras.preprocessing.image import ImageDataGenerator
 from pandas import DataFrame
 
-from pycbml.class_statistics import class_stats, save_stats_to_file
-from pycbml.file_utils import clean_up_after_training, prep_files_for_training
+from pycbml.class_statistics import class_stats, print_statistics
 
 
 def create_VGG16_transfer_model(classes, input_shape):
     model = VGG16(weights='imagenet', include_top=False,
-                  input_shape=input_shape)
-    
+                  input_shape=input_shape
+                  )
+
     x = Flatten()(model.layers[-1].output)
     x = Dense(128, activation='relu',
               kernel_initializer='he_uniform')(x)
@@ -52,25 +52,30 @@ def compile_model(img_width, img_height, classes):
     return model
 
 
-def fit_model(train_data_dir, validation_data_dir, img_width, img_height, epochs, batch_size, model: Model, model_save_path):
+def fit_model(train_data_dir, img_width, img_height, epochs, batch_size, model: Model, model_save_path):
     # reference https://www.geeksforgeeks.org/python-image-classification-using-keras/
     # https://studymachinelearning.com/keras-imagedatagenerator-with-flow_from_directory/
 
-    train_generator = ImageDataGenerator().flow_from_directory(
+    train_datagen = ImageDataGenerator(validation_split=0.20)
+
+    train_generator = train_datagen.flow_from_directory(
         train_data_dir,
         color_mode='rgb',
         target_size=(img_width, img_height),
         batch_size=batch_size,
         class_mode='categorical',
-        shuffle=True
+        shuffle=True,
+        subset='training'
     )
 
-    validation_generator = ImageDataGenerator().flow_from_directory(
-        validation_data_dir,
+    validation_generator = train_datagen.flow_from_directory(
+        train_data_dir,
         color_mode='rgb',
         target_size=(img_width, img_height),
         batch_size=batch_size,
-        shuffle=False)
+        shuffle=False,
+        subset='validation'
+    )
 
     STEP_SIZE_TRAIN = train_generator.n//train_generator.batch_size
     STEP_SIZE_VALID = validation_generator.n//validation_generator.batch_size
@@ -86,17 +91,8 @@ def fit_model(train_data_dir, validation_data_dir, img_width, img_height, epochs
     return history
 
 
-def save_model_history(history, model_save_path, train_class_stats, validation_class_stats):
+def save_model_history(history, model_save_path):
     print("Saving training history plots...")
-    # save stats to file
-    save_stats_to_file(
-        train_class_stats,
-        os.path.join(model_save_path, "train_class_stats.txt")
-    )
-    save_stats_to_file(
-        validation_class_stats,
-        os.path.join(model_save_path, "validation_class_stats.txt")
-    )
 
     # save accuracy and loss charts to file
     accuracy_history = DataFrame({
@@ -130,24 +126,17 @@ def save_model_history(history, model_save_path, train_class_stats, validation_c
 
 
 def main(img_width, img_height, classes, epochs, batch_size, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__))):
-    # collect stats on and prepare training and validation files
-    train_data_dir, validation_data_dir, model_save_path = prep_files_for_training(
-        classes, normalize, base_path)
-    try:
-        train_class_stats = class_stats(classes, train_data_dir)
-        validation_class_stats = class_stats(classes, validation_data_dir)
+    train_data_dir = os.path.join(base_path, "data", "train")
+    model_save_path = os.path.join(base_path, "models")
+    print_statistics(class_stats(classes, train_data_dir))
 
-        # create and train model, save training info
-        model = compile_model(img_width, img_height, classes)
+    # create and train model, save training info
+    model = compile_model(img_width, img_height, classes)
 
-        history = fit_model(train_data_dir, validation_data_dir, img_width,
-                            img_height, epochs, batch_size, model, model_save_path)
+    history = fit_model(train_data_dir, img_width, img_height,
+                        epochs, batch_size, model, model_save_path)
 
-        return save_model_history(history, model_save_path,
-                           train_class_stats, validation_class_stats)
-    finally:
-        # clean up
-        clean_up_after_training(train_data_dir, validation_data_dir)
+    return save_model_history(history, model_save_path)
 
 
 if __name__ == "__main__":

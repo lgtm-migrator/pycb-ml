@@ -21,10 +21,6 @@ def print_statistics(stats):
         print(f"{key} : {stats[key]}")
 
 
-def save_stats_to_file(stats, file_path):
-    with open(file_path, 'w') as f:
-        for key in stats:
-            f.write(f"{key} : {stats[key]}")
 
 
 if __name__ == "__main__":
