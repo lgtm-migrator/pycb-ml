@@ -1,10 +1,9 @@
 import os
 
 import plotly.express as px
-from keras import backend as K
 from keras.applications.vgg16 import VGG16
-from keras.layers import Dense, Flatten
-from keras.models import Model
+from keras.layers import Dense, Flatten, Input, Conv2D, MaxPooling2D
+from keras.models import Model, Sequential
 from keras.preprocessing.image import ImageDataGenerator
 from pandas import DataFrame
 
@@ -12,47 +11,65 @@ from pycbml.class_statistics import class_stats, save_stats_to_file
 from pycbml.file_utils import clean_up_after_training, prep_files_for_training
 
 
+def create_VGG16_transfer_model(classes, input_shape):
+    model = VGG16(weights='imagenet', include_top=False,
+                  input_shape=input_shape)
+    
+    x = Flatten()(model.layers[-1].output)
+    x = Dense(128, activation='relu',
+              kernel_initializer='he_uniform')(x)
+    x = Dense(64, activation='relu',
+              kernel_initializer='he_uniform')(x)
+    x = Dense(len(classes), activation='sigmoid')(x)
+
+    model = Model(model.inputs, x)
+    return model
+
+
+def create_simple_model(classes, input_shape):
+    return Sequential([
+        Conv2D(32, (3, 3), activation='relu', input_shape=input_shape),
+        MaxPooling2D(2, 2),
+        Conv2D(32, (3, 3), activation='relu'),
+        MaxPooling2D(2, 2),
+        Flatten(),
+        Dense(128, activation='relu', kernel_initializer='he_uniform'),
+        Dense(len(classes), activation='sigmoid')
+    ])
+
+
 def compile_model(img_width, img_height, classes):
     print("Compiling model...")
-    if K.image_data_format() == 'channels_first':
-        input_shape = (3, img_width, img_height)
-    else:
-        input_shape = (img_width, img_height, 3)
 
-    model = VGG16(weights='imagenet', include_top=False)
-    model = VGG16(include_top=False, input_shape=input_shape)
-    flat1 = Flatten()(model.layers[-1].output)
-    class1 = Dense(128, activation='relu',
-                   kernel_initializer='he_uniform')(flat1)
-    class2 = Dense(64, activation='relu',
-                   kernel_initializer='he_uniform')(class1)
-    output = Dense(len(classes), activation='softmax')(class2)
-    # define new model
-    model = Model(inputs=model.inputs, outputs=output)
+    input_shape = (img_width, img_height, 3)
+
+    model = create_VGG16_transfer_model(classes, input_shape)
+    #model = create_simple_model(classes, input_shape)
+
     model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy',
+                  loss='binary_crossentropy',
                   metrics=['accuracy'])
     return model
 
 
 def fit_model(train_data_dir, validation_data_dir, img_width, img_height, epochs, batch_size, model: Model, model_save_path):
     # reference https://www.geeksforgeeks.org/python-image-classification-using-keras/
-    train_datagen = ImageDataGenerator()
-    validation_datagen = ImageDataGenerator()
+    # https://studymachinelearning.com/keras-imagedatagenerator-with-flow_from_directory/
 
-    train_generator = train_datagen.flow_from_directory(
+    train_generator = ImageDataGenerator().flow_from_directory(
         train_data_dir,
+        color_mode='rgb',
         target_size=(img_width, img_height),
         batch_size=batch_size,
-        class_mode='binary',
+        class_mode='categorical',
         shuffle=True
     )
 
-    validation_generator = validation_datagen.flow_from_directory(
+    validation_generator = ImageDataGenerator().flow_from_directory(
         validation_data_dir,
+        color_mode='rgb',
         target_size=(img_width, img_height),
         batch_size=batch_size,
-        class_mode='binary',
         shuffle=False)
 
     STEP_SIZE_TRAIN = train_generator.n//train_generator.batch_size
@@ -109,6 +126,7 @@ def save_model_history(history, model_save_path, train_class_stats, validation_c
         template="plotly_dark"
     )
     fig.write_html(os.path.join(model_save_path, "model_loss.html"))
+    return os.path.basename(model_save_path)
 
 
 def main(img_width, img_height, classes, epochs, batch_size, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__))):
@@ -125,10 +143,27 @@ def main(img_width, img_height, classes, epochs, batch_size, normalize=False, ba
         history = fit_model(train_data_dir, validation_data_dir, img_width,
                             img_height, epochs, batch_size, model, model_save_path)
 
-        save_model_history(history, model_save_path,
+        return save_model_history(history, model_save_path,
                            train_class_stats, validation_class_stats)
     finally:
         # clean up
         clean_up_after_training(train_data_dir, validation_data_dir)
 
 
+if __name__ == "__main__":
+    # image and class params
+    img_width, img_height = 290, 325
+    classes = ["A1", "A3", "B1", "B3", "C1", "C3", "None"]
+
+    # define working directory
+    base_path = "/content/drive/MyDrive/Programming/Python/pycb-ml/"
+
+    # training params
+    epochs = 5
+    batch_size = 32
+    main(img_width,
+         img_height,
+         classes,
+         epochs,
+         batch_size,
+         base_path=base_path)
