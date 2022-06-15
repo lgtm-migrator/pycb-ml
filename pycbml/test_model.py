@@ -8,8 +8,8 @@ import numpy
 from pycbml.file_utils import prepare_files
 
 
-def eval_and_test_model(img_width, img_height, base_path, model_name):
-    data_dir, model_save_path = prepare_files(base_path, overwrite=False)
+def eval_and_test_model(img_width, img_height, base_path, model_name, overwrite=False):
+    data_dir, model_save_path = prepare_files(base_path, overwrite=overwrite)
     
     model_path = os.path.join(model_save_path, model_name)
     test_data_dir = os.path.join(data_dir, "test")
