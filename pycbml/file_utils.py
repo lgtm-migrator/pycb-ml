@@ -9,7 +9,7 @@ def unzip_data(base_path, overwrite):
     data_dir = os.path.join(destination, "data")
     if not os.path.exists(data_dir) or overwrite:
         with zipfile.ZipFile(zip_path) as zf:
-            for member in tqdm(zf.infolist(), desc='Extracting '):
+            for member in tqdm(zf.infolist(), desc=f'Extracting {zip_path}'):
                 try:
                     zf.extract(member, destination)
                 except zipfile.error as e:
