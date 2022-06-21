@@ -1,5 +1,5 @@
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", "r", encoding="utf-8") as f:
     LONG_DESCRIPTION = f.read()
@@ -24,7 +24,7 @@ setup(
     install_requires=['keras', 'tensorflow', 'pysimplegui',
                       'pillow', 'pandas', 'plotly', 'ipython',
                       'tqdm', 'scipy', 'sklearn', 'tabulate'],
-    packages=['pycbml'],
+    packages=find_packages(),
     python_requires='>=3',
     zip_safe=False,
     classifiers=[
