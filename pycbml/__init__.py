@@ -1,5 +1,4 @@
-import classify
-
+from pycbml import classify
 
 
 __all__ = [
