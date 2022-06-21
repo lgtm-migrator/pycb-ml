@@ -9,10 +9,11 @@ from keras.utils import load_img
 from keras.applications.vgg16 import decode_predictions
 from glob import glob
 
-model_name = "save1655230795"
+model_name = "1655328418save"
 img_width, img_height = (290, 325)
 
 base_path = os.path.dirname(os.path.realpath(__file__))
+
 model_path = os.path.join(
     base_path,
     "models",
@@ -30,7 +31,6 @@ for test_image in image_names:
     img = img / 255.0
     img = img.reshape(1, img_width, img_height, 3)
     label = model.predict(img)
-    label = decode_predictions(label)
-    #round_label = np.around(label)
-
-    print(f"Actual Class: {os.path.basename(os.path.dirname(test_image))} - Predicted Class: {label[0][0]}")
+    #label = decode_predictions(label)
+    label = np.argmax(label, axis=1)
+    print(f"Actual Class: {os.path.basename(os.path.dirname(test_image))} - Predicted Class: {label[0]}")

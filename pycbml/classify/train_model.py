@@ -8,7 +8,7 @@ from keras.models import Model, Sequential
 from keras.preprocessing.image import ImageDataGenerator
 from pandas import DataFrame
 
-from pycbml.class_statistics import class_stats, print_statistics
+from pycbml.classify.class_statistics import class_stats, print_statistics
 from pycbml.file_utils import prepare_files
 
 
@@ -127,7 +127,7 @@ def save_model_history(history, model_save_path):
     return os.path.basename(model_save_path)
 
 
-def main(img_width, img_height, classes, epochs, batch_size, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__)), overwrite=False):
+def train_new_model(img_width, img_height, classes, epochs, batch_size, normalize=False, base_path=os.path.dirname(os.path.realpath(__file__)), overwrite=False):
     data_dir, model_save_dir = prepare_files(base_path, overwrite=overwrite)
     train_data_dir = os.path.join(data_dir, "train")
     model_save_path = os.path.join(model_save_dir, f"{int(time.time())}save")
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     # training params
     epochs = 5
     batch_size = 32
-    main(img_width,
+    train_new_model(img_width,
          img_height,
          classes,
          epochs,
